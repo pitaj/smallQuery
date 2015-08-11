@@ -1,0 +1,29 @@
+{
+  "name": "smallQuery",
+  "version": "1.0.0",
+  "description": "DOM abstraction library with jQuery syntax which works only on IE10+",
+  "main": "smallQuery.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pitaj/smallQuery.git"
+  },
+  "keywords": [
+    "small",
+    "query",
+    "jquery",
+    "dom",
+    "document",
+    "object",
+    "model",
+    "abstract"
+  ],
+  "author": "PitaJ",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pitaj/smallQuery/issues"
+  },
+  "homepage": "https://github.com/pitaj/smallQuery"
+}
