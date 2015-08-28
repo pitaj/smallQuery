@@ -1,0 +1,60 @@
+<div id="one">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+  bleh for stuff
+  <!-- and things -->
+</div>
+<div id="two">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+<div id="three">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+<div id="four">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+
+<script>
+function runTest(){
+  var S = SmallQuery.SQ;
+  var J = jQuery;
+
+  QU.test("#text", function(assert){
+    S("#three span").text("derka");
+    J("#four span").text("derka");
+
+    assert.equal( document.getElementById("three").textContent,
+      document.getElementById("four").textContent );
+
+    assert.equal( S("#one").text(), J("#one").text() );
+
+    assert.equal( S("#one span").text(), J("#one span").text() );
+
+    S("#three span").text(function(index, text){
+      return text + index;
+    });
+
+    J("#four span").text(function(index, text){
+      return text + index;
+    });
+
+    assert.equal( document.getElementById("three").textContent,
+      document.getElementById("four").textContent );
+  });
+}
+</script>

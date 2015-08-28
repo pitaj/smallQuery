@@ -1,6 +1,9 @@
+"use strict";
+
 (function(document, window, undefined){
 
 let compat = window.$;
+let compatSQ = window.SmallQuery;
 
 let SmallQuery = {
   // covers CSS queries
@@ -10,12 +13,26 @@ let SmallQuery = {
   },
   // creates a new SmallQuery object
   create(elem){
+    if(elem){
+      return Object.create(SmallQuery.prototype, {
+        '0': {
+          value: elem,
+          configurable: true,
+          enumerable: true,
+          writable: true
+        },
+        length: {
+          value: 1,
+          writable: true,
+          enumerable: false
+        }
+      });
+    }
     return Object.create(SmallQuery.prototype, {
-      '0': {
-        value: elem
-      },
       length: {
-        value: 1
+        value: 0,
+        writable: true,
+        enumerable: false
       }
     });
   },
@@ -44,27 +61,56 @@ let SmallQuery = {
         // not a node
       }
     }
-    return SmallQuery.create(document);
+    return SmallQuery.create();
   },
-  compat(){
+  // for compat with libraries using window.$
+  noConflict(all){
     window.$ = compat;
+    if(all){
+      window.SmallQuery = compatSQ;
+    }
     return SmallQuery.SQ;
+  },
+  // for console stuff
+  toString(){
+    return "[object SmallQuery]";
   }
 };
 
-let dataSymbol = new Symbol("SmallQuery DataStore");
+// jQuery compat $.noConflict
+SmallQuery.SQ.noConflict = SmallQuery.noConflict;
+
+// allow access of the ma`in `object from the query function
+SmallQuery.SQ.main = function(){
+  return SmallQuery;
+};
+
+// use symbol for element datastores
+let dataSymbol = Symbol("SmallQuery DataStore");
+// use separate symbol for element eventhandlers
+let handlerSymbol = Symbol("SmallQuery EventHandler Store");
 
 function flatten(arrOfArrs){
-  return Array.prototype.concat.apply([], arrOfArrs);
+  var merged = [];
+  Array.prototype.forEach.call(arrOfArrs, function(arr){
+    merged.push.apply(merged, arr);
+  });
+  return merged;
 }
 
 SmallQuery.prototype = {
   [Symbol.iterator]: Array.prototype[Symbol.iterator],
 
+  toString(){
+    return "[object SmallQueryList]";
+  },
+
+  splice: function(){},
+
   // internal utility functions
   mmap(fn){
     let arr = Array.prototype.map.call(this, fn);
-    if(arr[0].length && arr[0].toString() !== arr[0]){
+    if(arr[0] && arr[0].length !== undefined && arr[0].toString() !== arr[0]){
       arr = flatten(arr);
     }
     return SmallQuery.from(arr);
@@ -90,30 +136,27 @@ SmallQuery.prototype = {
     });
   },
   map(fn){
-    return this.mmap(function(elem, index){
-      fn.call(elem, index, elem);
-    });
+    return this.mmap((elem, index) => fn.call(elem, index, elem));
   },
   filter(fn){
     if(fn.toString() === fn){
       return this.mfilter(fn);
     }
-    return this.mfilter(function(elem, index){
-      fn.call(elem, index, elem);
-    });
+    return this.mfilter((elem, index) => fn.call(elem, index, elem));
   },
 
   // functions which don't fit below, mainly overloaded getters / setters
   html(str){
     if(str !== undefined){
-      if(str.toString() === str){
-        for(let elem of this){
-          elem.innerHTML = str;
-        }
-      } else {
-        for(let elem of this){
-          elem.innerHTML = str(elem.innerHTML, elem);
-        }
+
+      if(typeof str === "function"){
+        return this.forEach(function(elem, index){
+          elem.innerHTML = str.call(elem, index, elem.innerHTML);
+        });
+      }
+
+      for(let elem of this){
+        elem.innerHTML = str;
       }
       return this;
     }
@@ -121,14 +164,15 @@ SmallQuery.prototype = {
   },
   outer(str){
     if(str !== undefined){
-      if(str.toString() === str){
-        for(let elem of this){
-          elem.outerHTML = str;
-        }
-      } else {
-        for(let elem of this){
-          elem.outerHTML = str(elem.outerHTML, elem);
-        }
+
+      if(typeof str === "function"){
+        return this.forEach(function(elem, index){
+          elem.outerHTML = str.call(elem, index, elem.outerHTML);
+        });
+      }
+
+      for(let elem of this){
+        elem.outerHTML = str;
       }
       return this;
     }
@@ -136,57 +180,126 @@ SmallQuery.prototype = {
   },
   text(str){
     if(str !== undefined){
-      if(str.toString() === str){
-        for(let elem of this){
-          elem.textContent = str;
-        }
-      } else {
-        for(let elem of this){
-          elem.textContent = str(elem.textContent, elem);
-        }
+      if(typeof str === "function") {
+        return this.forEach(function(elem, index){
+          elem.textContent = str.call(elem, index, elem.textContent);
+        });
       }
+
+      for(let elem of this){
+        elem.textContent = str;
+      }
+
       return this;
     }
-    return this[0].textContent;
+
+    var ret = "";
+    for(let elem of this){
+      ret += elem.textContent;
+    }
+    return ret;
   },
   prop(name, value){
-    if(name && value !== undefined){
-      for(let elem of this){
-        elem[name] = value;
+    if(name.toString() === name){
+      if(value !== undefined){
+
+        if(typeof value === "function"){
+          return this.forEach(function(elem, index){
+            elem[name] = value.call(elem, index, elem[name]);
+          });
+        }
+
+        for(let elem of this){
+          elem[name] = value;
+        }
+        return this;
       }
-      return this;
+      return this[0][name];
     }
-    return this[0][name];
+    for(let elem of this){
+      for(let prop of Object.keys(name)){
+        elem[prop] = name[prop];
+      }
+    }
+    return this;
+  },
+  attr(name, value){
+    if(name.toString() === name){
+      if(value !== undefined){
+
+        if(typeof value === "function"){
+          return this.forEach(function(elem, index){
+            elem.setAttribute(name, value.call(elem, index, elem.getAttribute(name)));
+          });
+        }
+
+        for(let elem of this){
+          elem.setAttribute(name, value);
+        }
+        return this;
+      }
+      return this[0].getAttribute(name);
+    }
+    for(let elem of this){
+      for(let prop of Object.keys(name)){
+        elem.setAttribute(prop, name[prop]);
+      }
+    }
+    return this;
   },
   val(value){
     if(value !== undefined){
+
+      if(typeof value === "function"){
+        return this.forEach(function(elem, index){
+          elem.value =  value.call(elem, index, elem.value);
+        });
+      }
+
       for(let elem of this){
         elem.value = value;
       }
       return this;
     }
-    return this[0].value;
+    return this[0].value !== undefined ? this[0].value : "";
   },
   css(name, value){
+    if(!name){
+      return this;
+    }
     if(name.toString() === name){
       if(value !== undefined){
-        for(let elem in this){
-          elem.style[name] = value;
+        for(let elem of this){
+          elem.style.setProperty(name, value);
         }
         return this;
       }
-      var style = window.getComputedStyle(this);
+
+      var self = this;
+
+      let swit = {
+        width: function(){
+          let rect = self[0].getBoundingClientRect();
+          return Math.round(rect.right - rect.left) + "px";
+        },
+        height: function(){
+          let rect = self[0].getBoundingClientRect();
+          return Math.round(rect.bottom - rect.top) + "px";
+        }
+      };
+
+      if(swit.hasOwnProperty(name)){
+        return swit[name]();
+      }
+
+      let style = window.getComputedStyle(this[0]);
       return style.getPropertyValue(name);
     }
-    if(!name){
-      return window.getComputedStyle(this);
-    }
-    for(let elem in this){
-      for(let style in Object.keys(name)){
+    for(let elem of this){
+      for(let style of Object.keys(name)){
         elem.style.setProperty(style, name[style]);
       }
     }
-    return this;
   },
   scrollTop(value){
     if(value !== undefined){
@@ -211,7 +324,7 @@ SmallQuery.prototype = {
       return this[0].dataset;
     }
     if(name.toString() !== name){
-      for(let elem in this){
+      for(let elem of this){
         Object.assign(elem[dataSymbol], name);
       }
       return this;
@@ -219,7 +332,7 @@ SmallQuery.prototype = {
     if(value === undefined){
       return this[0][dataSymbol][name];
     }
-    for(let elem in this){
+    for(let elem of this){
       elem[dataSymbol][name] = value;
     }
     return this;
@@ -295,20 +408,20 @@ let eachers = {
   removeAttr(name){
     this.removeAttribute(name);
   },
-  on(eventName, callback){
-    this[dataSymbol].handlers[eventName].push(callback);
+  on(eventName, selector, callback){
+    this[handlerSymbol][eventName].push(callback);
     this.addEventListener(eventName, callback, false);
   },
   off(eventName, callback){
     if(!eventName){
-      for(let event in Object.keys(this[dataSymbol].handlers)){
-        for(let fn in this[dataSymbol].handlers[event]){
+      for(let event of Object.keys(this[handlerSymbol])){
+        for(let fn of this[handlerSymbol][event]){
           this.removeEventListener(event, fn, false);
         }
       }
     }
     if(!callback){
-      for(let fn in this[dataSymbol].handlers[eventName]){
+      for(let fn of this[handlerSymbol][eventName]){
         this.removeEventListener(eventName, fn, false);
       }
     }
@@ -320,7 +433,7 @@ let eachers = {
       callback.apply(this, arguments);
       self.removeEventListener(eventName, fn, false);
     }
-    this[dataSymbol].handlers[eventName].push(fn);
+    this[handlerSymbol][eventName].push(fn);
     this.addEventListener(eventName, fn, false);
   },
   delegate(selector, eventName, callback){
@@ -330,7 +443,7 @@ let eachers = {
         callback.apply(target, arguments);
       }
     }
-    this[dataSymbol].handlers[eventName].push(fn);
+    this[handlerSymbol][eventName].push(fn);
     this.addEventListener(eventName, fn, false);
   },
   after(elem){
@@ -458,8 +571,15 @@ for(let key of Object.keys(oners)){
   };
 }
 
-window.SmallQuery = SmallQuery;
-
-window.$ = SmallQuery.SQ;
+if(window.define && window.define.amd){
+  window.define("SmallQuery", function (){
+    return SmallQuery;
+  });
+} else if(window.require && window.module){
+  module.exports = SmallQuery;
+} else {
+  window.SmallQuery = SmallQuery;
+  window.$ = SmallQuery.SQ;
+}
 
 })(document, window);

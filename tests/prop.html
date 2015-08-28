@@ -1,0 +1,45 @@
+<div id="three">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+
+<div id="four">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+
+<script>
+function runTest(){
+  var S = SmallQuery.SQ;
+  var J = jQuery;
+
+  QU.test("#prop", function(assert){
+    S("#three span").prop("derka", "foobar");
+    J("#four span").prop("derka", "foobar");
+
+    assert.equal( document.querySelector("#three span").derka,
+      document.querySelector("#four span").derka );
+
+    assert.equal( S("#three").prop("derka"), J("#four").prop("derka") );
+
+    assert.equal( S("#three span").prop("nodeType"), J("#three span").prop("nodeType") );
+
+    S("#three span").prop("derka", function(index, value){
+      return value + index;
+    });
+
+    J("#four span").prop("derka", function(index, value){
+      return value + index;
+    });
+
+    assert.equal( document.querySelector("#three span").derka,
+      document.querySelector("#four span").derka );
+  });
+}
+</script>

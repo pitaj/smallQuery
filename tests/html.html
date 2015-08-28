@@ -1,0 +1,146 @@
+<div id="one">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+<div id="two">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+<div id="three">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+<div id="four">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+
+<script>
+  function runTest(){
+
+    (function jQueryOuterHTML($, window, document){
+
+      var getOuterHTML, setOuterHTML;
+
+      if(!( "outerHTML" in document.createElement("span") )){
+      (function(){
+
+        var container = document.createElementNS("http://www.w3.org/1999/xhtml", "_"),
+          xml_serializer = new XMLSerializer();
+        getOuterHTML = function (elem) {
+          var html;
+          if (document.xmlVersion) {
+            return xml_serializer.serializeToString(elem);
+          } else {
+            container.appendChild(elem.cloneNode(false));
+            html = container.innerHTML.replace("><", ">" + elem.innerHTML + "<");
+            container.innerHTML = "";
+            return html;
+          }
+        }
+        setOuterHTML = function (elem, html) {
+          var parent = elem.parentNode;
+          var child;
+
+          if (parent === null) {
+            DOMException.code = DOMException.NOT_FOUND_ERR;
+            throw DOMException;
+          }
+          container.innerHTML = html;
+          while ((child = container.firstChild)) {
+            parent.insertBefore(child, elem);
+          }
+          parent.removeChild(elem);
+        }
+
+      })();
+      } else {
+        getOuterHTML = function(elem){
+          return elem.outerHTML;
+        };
+        setOuterHTML = function(elem, html){
+          elem.outerHTML = html;
+        };
+      }
+
+      $.fn.outer = function(html){
+        if(!html){
+          return getOuterHTML(this[0]);
+        }
+        if(html.toString() === html){
+          this.each(function(index, elem){
+            setOuterHTML(elem, html);
+          });
+        } else {
+          this.each(function(index, elem){
+            setOuterHTML(elem, html(getOuterHTML(elem), elem));
+          });
+        }
+        return this;
+      };
+    })(jQuery, window, document);
+
+    var S = SmallQuery.SQ;
+    var J = jQuery;
+
+    QU.test("#html", function(assert){
+      S("#one span").html("derka");
+      J("#two span").html("derka");
+
+      assert.equal( document.getElementById("one").innerHTML,
+        document.getElementById("two").innerHTML );
+
+      if(document.getElementById("one").innerHTML ===
+          document.getElementById("two").innerHTML){
+        assert.equal( S("#one span").html(), J("#two span").html() );
+      } else {
+        assert.notEqual( S("#one span").html(), J("#two span").html() );
+      }
+
+      S("#one span").html(function(index, html){
+        return html + index;
+      });
+
+      J("#two span").html(function(index, html){
+        return html + index;
+      });
+
+      assert.equal( document.getElementById("one").innerHTML,
+        document.getElementById("two").innerHTML );
+    });
+
+    QU.test("#outer", function(assert){
+      S("#one span").outer("derka");
+      J("#two span").outer("derka");
+
+      assert.equal( document.getElementById("one").innerHTML,
+        document.getElementById("two").innerHTML );
+
+      assert.equal( S("#one").outer(), J("#one").outer() );
+
+      S("#one span").outer(function(index, html){
+        return html + index;
+      });
+
+      J("#two span").outer(function(index, html){
+        return html + index;
+      });
+
+      assert.equal( document.getElementById("one").innerHTML,
+        document.getElementById("two").innerHTML );
+    });
+
+  }
+</script>

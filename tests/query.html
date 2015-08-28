@@ -1,0 +1,20 @@
+<span>Select me</span>
+
+<div class="attack">
+  <p id="para">blahdiblah</p>
+</div>
+
+<script>
+  function runTest(){
+    var S = SmallQuery.SQ;
+    var J = jQuery;
+
+    QU.test("SmallQuery.query", function(assert){
+      assert.arrayEquals( S("span")          , J("span")           );
+      assert.arrayEquals( S(".attack")       , J(".attack")        );
+      assert.arrayEquals( S("#para")         , J("#para")          );
+      assert.arrayEquals( S("div > p")       , J("div > p")        );
+      assert.arrayEquals( S("p", S("div")[0]), J("p", J("div")[0]) );
+    });
+  }
+</script>

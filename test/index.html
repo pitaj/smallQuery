@@ -1,0 +1,117 @@
+<html>
+  <head>
+    <script src="../node_modules/jquery/dist/jquery.js"></script>
+    <script src="../smallQuery.js"></script>
+    <script src="../node_modules/qunitjs/qunit/qunit.js"></script>
+
+    <style>
+      @import "../node_modules/qunitjs/qunit/qunit.css";
+
+      #tests {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 50px;
+      }
+
+      #tests iframe {
+        width: 100px;
+        height: 100px;
+        display: block;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="tests">
+      <!-- tests compiled into here -->
+      <iframe src="../tests/attr.html"></iframe><iframe src="../tests/create.html"></iframe><iframe src="../tests/css.html"></iframe><iframe src="../tests/from.html"></iframe><iframe src="../tests/html.html"></iframe><iframe src="../tests/noConflict.html"></iframe><iframe src="../tests/prop.html"></iframe><iframe src="../tests/query.html"></iframe><iframe src="../tests/text.html"></iframe><iframe src="../tests/util.html"></iframe><iframe src="../tests/val.html"></iframe>
+    </div>
+
+    <div id="qunit"></div>
+    <div id="qunit-fixture">
+
+  </body>
+  <script>
+
+    var jquerysrc = "../node_modules/jquery/dist/jquery.js";
+    var smallquerysrc = "../smallQuery.js";
+
+    function prepareFrame(frame){
+
+      var finished = 0;
+      function onedone(){
+        finished += 1;
+        if(finished === 2){
+          frame.contentWindow.runTest();
+        }
+      }
+
+      window.QUnit.assert.arrayEquals = function(one, two){
+        var result = true;
+        var message = "";
+        if(one.length !== two.length){
+          result = false;
+          message = "one.length != two.length  \n";
+        }
+
+        for(var i = 0, l = one.length; i < l; i += 1){
+          if(one[i] != two[i]){
+            result = false;
+            message += "one[" + i + "] != two[" + i + "]  \n";
+          }
+        }
+
+        if(!result){
+          console.warn("one", one, "two", two);
+        }
+
+        this.push( !!result, result, true, result ? "okay" : message );
+      };
+
+      window.QUnit.assert.setEquals = function(one, two){
+        var result = true;
+        var message = "";
+        if(one.length !== two.length){
+          result = false;
+          message = "one.length != two.length  \n";
+        }
+
+        for(var i = 0, l = one.length; i < l; i += 1){
+          if(Array.prototype.indexOf.call(two, one[i]) === -1){
+            result = false;
+            message += "two does not contain one[" + i + "] \n";
+          }
+        }
+
+        if(!result){
+          console.warn("one", one, "two", two);
+        }
+
+        this.push( !!result, result, true, result ? "okay" : message );
+      };
+
+      frame.contentWindow.QU = window.QUnit;
+
+      var jq = frame.contentDocument.createElement("script");
+      var sq = frame.contentDocument.createElement("script");
+
+      jq.addEventListener("load", onedone);
+      sq.addEventListener("load", onedone);
+
+      jq.src = jquerysrc;
+      sq.src = smallquerysrc;
+
+      frame.contentDocument.head.appendChild(jq);
+      frame.contentDocument.head.appendChild(sq);
+
+    }
+
+    window.addEventListener("load", function(){
+
+      var frames = document.getElementsByTagName("iframe");
+      Array.prototype.forEach.call(frames, prepareFrame);
+
+    });
+
+  </script>
+</html>

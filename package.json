@@ -4,7 +4,7 @@
   "description": "DOM abstraction library with jQuery syntax which works only on IE10+",
   "main": "smallQuery.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/compile.js"
   },
   "repository": {
     "type": "git",
@@ -25,5 +25,11 @@
   "bugs": {
     "url": "https://github.com/pitaj/smallQuery/issues"
   },
-  "homepage": "https://github.com/pitaj/smallQuery"
+  "homepage": "https://github.com/pitaj/smallQuery",
+  "devDependencies": {
+    "chokidar": "^1.0.5",
+    "http-server": "^0.8.0",
+    "jquery": "^2.1.4",
+    "qunitjs": "^1.18.0"
+  }
 }

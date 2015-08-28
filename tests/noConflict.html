@@ -1,0 +1,18 @@
+<script>
+  function runTest(){
+    var S = SmallQuery.SQ;
+    var J = jQuery;
+
+    QU.test("SmallQuery.SQ.noConflict", function(assert){
+
+      J.noConflict();
+
+      assert.equal(S, $);
+      assert.equal(S.noConflict(), S);
+
+      S.noConflict(true);
+
+      assert.notOk(window.SmallQuery);
+    });
+  }
+</script>

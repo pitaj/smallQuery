@@ -1,0 +1,42 @@
+<div id="three">
+  <input type="text" name="name" value="escape">
+  <input type="text" name="name" value="escape">
+</div>
+
+<div id="four">
+  <input type="text" name="name" value="escape">
+  <input type="text" name="name" value="escape">
+</div>
+
+<script>
+function runTest(){
+  var S = SmallQuery.SQ;
+  var J = jQuery;
+
+  QU.test("#val", function(assert){
+
+    assert.equal( S("#three").val(), J("#four").val() );
+
+    S("#three input").val("derka");
+    J("#four input").val("derka");
+
+    assert.equal( document.querySelector("#three input").value,
+      document.querySelector("#four input").value );
+
+    assert.equal( S("#three").val(), J("#four").val() );
+
+    assert.equal( S("#three input").val(), J("#three input").val() );
+
+    S("#three input").val(function(index, value){
+      return value + index;
+    });
+
+    J("#four input").val(function(index, value){
+      return value + index;
+    });
+
+    assert.equal( document.querySelector("#three input").value,
+      document.querySelector("#four input").value );
+  });
+}
+</script>

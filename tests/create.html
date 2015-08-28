@@ -1,0 +1,23 @@
+<span>Select me</span>
+
+<div class="attack">
+  <p id="para">blahdiblah</p>
+</div>
+
+<script>
+  function runTest(){
+    var S = SmallQuery.SQ;
+    var J = jQuery;
+
+    QU.test("SmallQuery.create", function(assert){
+      assert.arrayEquals( S(document.getElementById("para")),
+                          J(document.getElementById("para")) );
+      assert.arrayEquals( S(document.querySelector("span")),
+                          J(document.querySelector("span")) );
+      assert.arrayEquals( S(document.querySelector("div")),
+                          J(document.querySelector("div")) );
+      assert.arrayEquals( S(), J() );
+      assert.arrayEquals( S( S("div")[0] ), J( J("div")[0] ) );
+    });
+  }
+</script>

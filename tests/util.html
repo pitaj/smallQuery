@@ -1,0 +1,115 @@
+<div id="one">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+<div id="two">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+<div id="three">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+<div id="four">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+
+<script>
+  function runTest(){
+    var S = SmallQuery.SQ;
+    var J = jQuery;
+
+    QU.test("#mmap", function(assert){
+      var spans = S("div").mmap(function(elem){
+        return elem.children;
+      });
+
+      assert.setEquals(spans, J("span"));
+
+    });
+
+    QU.test("#forEach", function(assert){
+      S("#one span").forEach(function(elem){
+        elem.innerHTML += "testing...";
+      });
+
+      J("#two span").each(function(){
+        this.innerHTML += "testing...";
+      });
+
+      assert.equal(document.getElementById("one").innerHTML,
+        document.getElementById("two").innerHTML);
+    });
+
+    QU.test("#mfilter", function(assert){
+      var s = S("#one span").mfilter(":first-child");
+      var j = J("#one span").filter(":first-child");
+
+      assert.arrayEquals(s, j);
+
+      var io = Array.prototype.indexOf.call.bind(Array.prototype.indexOf);
+
+      var s2 = S("#two span").mfilter(function(elem){
+        return io(elem.parentNode.children, elem) >= 1;
+      });
+      var j2 = J("#two span").filter(function(){
+        return io(this.parentNode.children, this) >= 1;
+      });
+
+      assert.arrayEquals(s2, j2);
+    });
+
+    QU.test("#each", function(assert){
+      S("#three span").each(function(){
+        this.innerHTML += "testing...";
+      });
+
+      J("#four span").each(function(){
+        this.innerHTML += "testing...";
+      });
+
+      assert.equal(document.getElementById("three").innerHTML,
+        document.getElementById("four").innerHTML);
+    });
+
+    QU.test("#map", function(assert){
+      var spans = S("div").map(function(){
+        return this.children;
+      });
+
+      assert.setEquals(spans, J("span"));
+    });
+
+    QU.test("#filter", function(assert){
+      var s = S("#one span").filter(":first-child");
+      var j = J("#one span").filter(":first-child");
+
+      assert.arrayEquals(s, j);
+
+      var io = Array.prototype.indexOf.call.bind(Array.prototype.indexOf);
+
+      var s2 = S("#two span").filter(function(){
+        return io(this.parentNode.children, this) >= 1;
+      });
+      var j2 = J("#two span").filter(function(){
+        return io(this.parentNode.children, this) >= 1;
+      });
+
+      assert.arrayEquals(s2, j2);
+    });
+
+  }
+</script>

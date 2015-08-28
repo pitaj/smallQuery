@@ -1,0 +1,36 @@
+<span>Select me</span>
+<span>one</span>
+<span>two</span>
+<span>three</span>
+<span>four</span>
+
+<div class="attack">
+  <p id="para">blahdiblah</p>
+  <p>stuff</p>
+</div>
+<div class="rush">
+  <p id="meh">blahdiblah</p>
+  <p>stuff</p>
+</div>
+<div class="run">
+  <p id="why">blahdiblah</p>
+  <p>stuff</p>
+</div>
+
+<script>
+  function runTest(){
+    var S = SmallQuery.SQ;
+    var J = jQuery;
+
+    QU.test("SmallQuery.from", function(assert){
+      assert.arrayEquals( S(document.querySelectorAll("div > p")),
+                          J(document.querySelectorAll("div > p")) );
+      assert.arrayEquals( S(document.querySelectorAll("span")),
+                          J(document.querySelectorAll("span")) );
+      assert.arrayEquals( S(document.querySelectorAll("div #para, div #meh")),
+                          J(document.querySelectorAll("div #para, div #meh")) );
+      assert.arrayEquals( S([document.querySelector("span"), document.getElementById("why")]),
+                          J([document.querySelector("span"), document.getElementById("why")]) );
+    });
+  }
+</script>

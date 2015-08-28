@@ -1,0 +1,60 @@
+<div id="three">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+
+<div id="four">
+  <span>zero</span>
+  <span>one</span>
+  <span>two</span>
+  <span>three</span>
+  <span>four</span>
+</div>
+
+<button id="yes">Same styles</button>
+<button id="no">Different styles</button>
+
+<script>
+function runTest(){
+  var S = SmallQuery.SQ;
+  var J = jQuery;
+
+  QU.test("#css", function(assert){
+
+    S("#three span:first-child").css("background-color", "red");
+    J("#four span:first-child").css("background-color", "red");
+
+    S("#three span:nth-child(2)").css({
+      "background-color": "green",
+      "color": "red"
+    });
+    J("#four span:nth-child(2)").css({
+      "background-color": "green",
+      "color": "red"
+    });
+
+    assert.equal(S("#three span:last-child").css("width"),
+      J("#three span:last-child").css("width"));
+
+    var done = assert.async();
+
+    document.getElementById("yes").onclick = function(){
+      assert.ok(true, "Same styles");
+      this.onclick = null;
+
+      done();
+    };
+
+    document.getElementById("no").onclick = function(){
+      assert.ok(false, "Same styles");
+      this.onclick = null;
+
+      done();
+    };
+
+  });
+}
+</script>
