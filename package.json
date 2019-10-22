@@ -29,7 +29,7 @@
   "devDependencies": {
     "chokidar": "^1.0.5",
     "http-server": "^0.8.0",
-    "jquery": "^2.1.4",
+    "jquery": "^3.4.1",
     "qunitjs": "^1.18.0"
   }
 }
